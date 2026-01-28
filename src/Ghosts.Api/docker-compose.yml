@@ -1,13 +1,11 @@
-# docker-compose up -d
-# -f compose-api.yml (if you want a custom file)
-
-networks:
-  ghosts-network:
-    driver: bridge
 services:
-  ghostsui:
-    image: dustinupdyke/ghosts-ui
+  ghosts-ui:
+    build:
+      context: ../ghosts.ui
+      dockerfile: Dockerfile
     container_name: ghosts-ui
+    depends_on:
+      - ghosts-api
     ports:
       - '8080:8080'
     networks:
@@ -16,13 +14,13 @@ services:
       GHOSTS_API_URL: http://ghosts-api:5000
   postgres:
     image: postgres:16.8
-    container_name: ghosts-postgres
+    container_name: postgres
     environment:
       POSTGRES_DB: ghosts
       POSTGRES_USER: ghosts
-      POSTGRES_PASSWORD: scotty@1
+      POSTGRES_PASSWORD: ghosts
     volumes:
-      - ./_db:/var/lib/postgresql/data
+      - ghosts-postgres-data:/var/lib/postgresql/data
     logging:
       options:
         max-size: '100m'
@@ -38,10 +36,13 @@ services:
       - ghosts-network
     restart: always
   ghosts-api:
-    image: dustinupdyke/ghosts:latest
+    build:
+      context: ..
+      dockerfile: Dockerfile-api
     container_name: ghosts-api
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     ports:
       - '5000:5000'
     networks:
@@ -49,13 +50,28 @@ services:
     restart: always
   grafana:
     image: grafana/grafana
-    container_name: ghosts-grafana
+    container_name: grafana
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
+    environment:
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_AUTH_DISABLE_LOGIN_FORM=true
     ports:
       - '3000:3000'
     networks:
       - ghosts-network
     restart: always
     volumes:
-      - ./_g:/var/lib/grafana
+      - ghosts-grafana-data:/var/lib/grafana
+      - ../../configuration/grafana/datasources:/etc/grafana/provisioning/datasources
+      - ../../configuration/grafana/dashboards:/etc/grafana/provisioning/dashboards
+
+volumes:
+  ghosts-postgres-data:
+  ghosts-grafana-data:
+
+networks:
+  ghosts-network:
+    driver: bridge
