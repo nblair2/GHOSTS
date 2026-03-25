@@ -80,4 +80,5 @@ jobs:
         run: |
           gh release upload "${{ github.event.release.tag_name }}" \
             ghosts-client-windows-x32.zip \
-            ghosts-client-windows-x64.zip
+            ghosts-client-windows-x64.zip \
+            -R ${{ github.repository }}
