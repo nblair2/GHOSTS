@@ -1,79 +1,113 @@
 {
-  "bootstrap-sha": "837bbc760ded97aedc879c06ea27df5d095769e2",
+  "bootstrap-sha": "e4a42a11d35575151769f77b00cdf568a8c3d1c8",
   "packages": {
     ".": {
       "release-type": "node",
+      "include-component-in-tag": false,
       "extra-files": [
-    {
-      "type": "yaml",
-      "path": "CITATION.cff",
-      "jsonpath": "$.version"
-    },
-    {
-      "type": "json",
-      "path": "src/Ghosts.Frontend/package.json",
-      "jsonpath": "$.version"
-    },
         {
-          "type": "generic",
+          "type": "yaml",
+          "path": "CITATION.cff",
+          "jsonpath": "$.version"
+        },
+        {
+          "type": "json",
+          "path": "src/Ghosts.Frontend/package.json",
+          "jsonpath": "$.version"
+        },
+        {
+          "type": "xml",
           "path": "src/Ghosts.Api/Ghosts.Api.csproj",
-          "expressions": [
-            "<AssemblyVersion>(\\d+\\.\\d+\\.\\d+)\\.0<\\/AssemblyVersion>",
-            "<FileVersion>(\\d+\\.\\d+\\.\\d+)\\.0<\\/FileVersion>"
-          ]
+          "xpath": "//AssemblyVersion"
         },
         {
-          "type": "generic",
+          "type": "xml",
+          "path": "src/Ghosts.Api/Ghosts.Api.csproj",
+          "xpath": "//FileVersion"
+        },
+        {
+          "type": "xml",
           "path": "src/Ghosts.Domain/Ghosts.Domain.csproj",
-          "expressions": [
-            "<AssemblyVersion>(\\d+\\.\\d+\\.\\d+)\\.0<\\/AssemblyVersion>",
-            "<FileVersion>(\\d+\\.\\d+\\.\\d+)\\.0<\\/FileVersion>"
-          ]
+          "xpath": "//AssemblyVersion"
         },
         {
-          "type": "generic",
+          "type": "xml",
+          "path": "src/Ghosts.Domain/Ghosts.Domain.csproj",
+          "xpath": "//FileVersion"
+        },
+        {
+          "type": "xml",
           "path": "src/Ghosts.Animator/Ghosts.Animator.csproj",
-          "expressions": [
-            "<AssemblyVersion>(\\d+\\.\\d+\\.\\d+)\\.0<\\/AssemblyVersion>",
-            "<FileVersion>(\\d+\\.\\d+\\.\\d+)\\.0<\\/FileVersion>"
-          ]
+          "xpath": "//AssemblyVersion"
         },
         {
-          "type": "generic",
+          "type": "xml",
+          "path": "src/Ghosts.Animator/Ghosts.Animator.csproj",
+          "xpath": "//FileVersion"
+        },
+        {
+          "type": "xml",
           "path": "src/Ghosts.Pandora/src/Ghosts.Pandora.csproj",
-          "expressions": [
-            "<Version>(\\d+\\.\\d+\\.\\d+)\\.0<\\/Version>",
-            "<ReleaseVersion>(\\d+\\.\\d+\\.\\d+)\\.0<\\/ReleaseVersion>",
-            "<AssemblyVersion>(\\d+\\.\\d+\\.\\d+)\\.0<\\/AssemblyVersion>",
-            "<FileVersion>(\\d+\\.\\d+\\.\\d+)\\.0<\\/FileVersion>"
-          ]
+          "xpath": "//Version"
         },
         {
-          "type": "generic",
+          "type": "xml",
+          "path": "src/Ghosts.Pandora/src/Ghosts.Pandora.csproj",
+          "xpath": "//ReleaseVersion"
+        },
+        {
+          "type": "xml",
+          "path": "src/Ghosts.Pandora/src/Ghosts.Pandora.csproj",
+          "xpath": "//AssemblyVersion"
+        },
+        {
+          "type": "xml",
+          "path": "src/Ghosts.Pandora/src/Ghosts.Pandora.csproj",
+          "xpath": "//FileVersion"
+        },
+        {
+          "type": "xml",
           "path": "src/Ghosts.Client.Universal/Ghosts.Client.Universal.csproj",
-          "expressions": [
-            "<Version>(\\d+\\.\\d+\\.\\d+)\\.0<\\/Version>",
-            "<ReleaseVersion>(\\d+\\.\\d+\\.\\d+)\\.0<\\/ReleaseVersion>",
-            "<AssemblyVersion>(\\d+\\.\\d+\\.\\d+)\\.0<\\/AssemblyVersion>",
-            "<FileVersion>(\\d+\\.\\d+\\.\\d+)\\.0<\\/FileVersion>"
-          ]
+          "xpath": "//Version"
         },
         {
-          "type": "generic",
+          "type": "xml",
+          "path": "src/Ghosts.Client.Universal/Ghosts.Client.Universal.csproj",
+          "xpath": "//ReleaseVersion"
+        },
+        {
+          "type": "xml",
+          "path": "src/Ghosts.Client.Universal/Ghosts.Client.Universal.csproj",
+          "xpath": "//AssemblyVersion"
+        },
+        {
+          "type": "xml",
+          "path": "src/Ghosts.Client.Universal/Ghosts.Client.Universal.csproj",
+          "xpath": "//FileVersion"
+        },
+        {
+          "type": "xml",
           "path": "src/Ghosts.Client.Lite/src/Ghosts.Client.Lite.csproj",
-          "expressions": [
-            "<Version>(\\d+\\.\\d+\\.\\d+)\\.0<\\/Version>",
-            "<ReleaseVersion>(\\d+\\.\\d+\\.\\d+)\\.0<\\/ReleaseVersion>",
-            "<AssemblyVersion>(\\d+\\.\\d+\\.\\d+)\\.0<\\/AssemblyVersion>",
-            "<FileVersion>(\\d+\\.\\d+\\.\\d+)\\.0<\\/FileVersion>"
-          ]
+          "xpath": "//Version"
+        },
+        {
+          "type": "xml",
+          "path": "src/Ghosts.Client.Lite/src/Ghosts.Client.Lite.csproj",
+          "xpath": "//ReleaseVersion"
+        },
+        {
+          "type": "xml",
+          "path": "src/Ghosts.Client.Lite/src/Ghosts.Client.Lite.csproj",
+          "xpath": "//AssemblyVersion"
+        },
+        {
+          "type": "xml",
+          "path": "src/Ghosts.Client.Lite/src/Ghosts.Client.Lite.csproj",
+          "xpath": "//FileVersion"
         },
         {
           "type": "generic",
-          "path": "src/Ghosts.Client.Windows/Properties/AssemblyInfo.cs",
-          "expressions": [
-            "AssemblyVersion\\(\"(\\d+\\.\\d+\\.\\d+)\\.0\"\\)"
-          ]
+          "path": "src/Ghosts.Client.Windows/Properties/AssemblyInfo.cs"
         }
       ]
     }
