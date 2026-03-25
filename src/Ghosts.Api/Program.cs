@@ -46,7 +46,6 @@ public class Program
         var msg = $"GHOSTS API {ApplicationDetails.Version} ({ApplicationDetails.VersionFile}) coming online...";
         Console.WriteLine(msg);
         _log.Info(msg);
-        _log.Info("I am fixing something");
 
         ApiDetails.LoadConfiguration();
 
