@@ -2,12 +2,6 @@ name: Frontend
 
 on:
   push:
-    branches: [master]
-    paths:
-      - 'src/Ghosts.Frontend/**'
-      - '.github/workflows/frontend.yml'
-  pull_request:
-    branches: [master]
     paths:
       - 'src/Ghosts.Frontend/**'
       - '.github/workflows/frontend.yml'
