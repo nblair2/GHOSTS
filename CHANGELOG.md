@@ -1,5 +1,13 @@
 # Changelog
 
+## [9.1.1](https://github.com/nblair2/GHOSTS/compare/ghosts-v9.1.0...ghosts-v9.1.1) (2026-03-25)
+
+
+### Bug Fixes
+
+* another fix ([897bbec](https://github.com/nblair2/GHOSTS/commit/897bbec11a7240b3de75bf93453ae5fb302910bf))
+* another fix ([1fd3e50](https://github.com/nblair2/GHOSTS/commit/1fd3e50d9c3b1c25c5c2fc1948087afd91acce23))
+
 ## [9.1.0](https://github.com/nblair2/GHOSTS/compare/ghosts-v9.0.0...ghosts-v9.1.0) (2026-03-25)
 
 
