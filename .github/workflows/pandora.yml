@@ -2,12 +2,6 @@ name: Pandora
 
 on:
   push:
-    branches: [master]
-    paths:
-      - 'src/Ghosts.Pandora/**'
-      - '.github/workflows/pandora.yml'
-  pull_request:
-    branches: [master]
     paths:
       - 'src/Ghosts.Pandora/**'
       - '.github/workflows/pandora.yml'
