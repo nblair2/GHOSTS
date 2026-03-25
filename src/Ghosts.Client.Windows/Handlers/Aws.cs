@@ -103,6 +103,7 @@ namespace Ghosts.Client.Handlers
                 if (err.Length > 0)
                 {
                     Log.Error($"{err} on {command}");
+                    Log.Info("I am adding a feature");
                 }
                 
                 Report(new ReportItem {Handler = HandlerType.Aws.ToString(), Command = command, Result = this.Result});
