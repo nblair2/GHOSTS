@@ -191,14 +191,26 @@ public class Outlook : BaseHandler
                 folderItems.Add(folderItem);
             }
 
-            var filteredEmails = folderItems.Where(x => x.BodyFormat == OlBodyFormat.olFormatHTML && x.HTMLBody.Contains("<a href="));
-            var mailItem = filteredEmails.PickRandom();
-                
-            //check deny list
-            var list = DenyListManager.RemoveDeniedFromList(mailItem.HTMLBody.GetHrefUrls());
-            if (list.Any())
+            // Read HTMLBody via Redemption to avoid OOM Guard on received messages
+            var htmlEmails = new List<string>();
+            foreach (var item in folderItems)
             {
-                list.PickRandom().OpenUrl();
+                var safe = new SafeMailItem { Item = item };
+                string html = safe.HTMLBody;
+                if (html != null && html.Contains("<a href="))
+                {
+                    htmlEmails.Add(html);
+                }
+            }
+
+            if (htmlEmails.Any())
+            {
+                var htmlBody = htmlEmails.PickRandom();
+                var list = DenyListManager.RemoveDeniedFromList(htmlBody.GetHrefUrls());
+                if (list.Any())
+                {
+                    list.PickRandom().OpenUrl();
+                }
             }
         }
         catch (Exception e)
@@ -316,8 +328,10 @@ public class Outlook : BaseHandler
                 var safeFolderItem = new SafeMailItem { Item = folderItem };
 
                 var emailReply = new EmailReplyManager();
-                        
-                var replyMail = folderItem.Reply();
+
+                // Create a fresh mail item instead of calling folderItem.Reply()
+                // which triggers the OOM Guard by reading sender address internally.
+                dynamic replyMail = _app.CreateItem(OlItemType.olMailItem);
 
                 using (var quoted = new StringWriter())
                 {
@@ -325,7 +339,8 @@ public class Outlook : BaseHandler
                     quoted.WriteLine("");
                     quoted.WriteLine("");
                     quoted.WriteLine($"On {folderItem.SentOn:f}, {safeFolderItem.SenderEmailAddress} wrote:");
-                    using (var reader = new StringReader(folderItem.Body))
+                    // Read body via Redemption to avoid OOM Guard
+                    using (var reader = new StringReader(safeFolderItem.Body))
                     {
                         string line;
                         while ((line = reader.ReadLine()) != null)

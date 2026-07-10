@@ -840,9 +840,12 @@ public class Outlookv2 : BaseHandler
         {
             try
             {
-                if (folderItem.BodyFormat == OlBodyFormat.olFormatHTML && folderItem.HTMLBody.Contains("<a href="))
+                // Read HTMLBody via Redemption to avoid OOM Guard on received messages
+                var safeItem = new SafeMailItem { Item = folderItem };
+                string htmlBody = safeItem.HTMLBody;
+                if (htmlBody != null && htmlBody.Contains("<a href="))
                 {
-                    var list = DenyListManager.RemoveDeniedFromList(folderItem.HTMLBody.GetHrefUrls());
+                    var list = DenyListManager.RemoveDeniedFromList(htmlBody.GetHrefUrls());
                     if (list.Any())
                     {
                         var url = list.PickRandom();
@@ -1009,7 +1012,9 @@ public class Outlookv2 : BaseHandler
 
                     replyStarted = true;
                     var emailReply = new EmailReplyManager();
-                    var replyMail = folderItem.Reply();
+                    // Create a fresh mail item instead of calling folderItem.Reply()
+                    // which triggers the OOM Guard by reading sender address internally.
+                    dynamic replyMail = _app.CreateItem(OlItemType.olMailItem);
 
                     using (var quoted = new StringWriter())
                     {
@@ -1017,7 +1022,8 @@ public class Outlookv2 : BaseHandler
                         quoted.WriteLine("");
                         quoted.WriteLine("");
                         quoted.WriteLine($"On {folderItem.SentOn:f}, {safeFolderItem.SenderEmailAddress} wrote:");
-                        using (var reader = new StringReader(folderItem.Body))
+                        // Read body via Redemption to avoid OOM Guard
+                        using (var reader = new StringReader(safeFolderItem.Body))
                         {
                             string line;
                             while ((line = reader.ReadLine()) != null)
