@@ -444,9 +444,10 @@ public class NpcChatService(
         }
 
         var activityType = DetectActivityType(message);
-        await npcService.CreateActivity(npc.Id, activityType.ToString(), $"{platform}: {text}");
+        // The social site reports the same text back, and the API keeps one record of the two
+        await npcService.CreateActivity(npc.Id, activityType.ToString(), text);
 
-        var username = SocialUsername(npc);
+        var username = NpcService.SocialHandle(npc, machine?.CurrentUsername);
         action.Ok = true;
         action.Argument = $"{platform} as {username}";
         action.Detail = text;
@@ -512,20 +513,6 @@ public class NpcChatService(
             _log.Warn($"NPC chat could not reach the social site on {host}: {ex.Message}");
             return "social site unreachable, recorded in NPC history only";
         }
-    }
-
-    /// <summary>
-    /// The account name the NPC posts under. Their email name keeps posts by the same NPC together.
-    /// </summary>
-    private static string SocialUsername(NpcRecord npc)
-    {
-        var email = npc.NpcProfile?.Email;
-        if (!string.IsNullOrWhiteSpace(email) && email.Contains('@'))
-            return email.Split('@')[0].ToLowerInvariant();
-
-        var name = npc.NpcProfile?.Name;
-        var handle = Join(".", name?.First, name?.Last).Replace(" ", string.Empty).ToLowerInvariant();
-        return string.IsNullOrWhiteSpace(handle) ? npc.Id.ToString("N")[..8] : handle;
     }
 
     /// <summary>
