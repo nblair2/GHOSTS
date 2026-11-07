@@ -73,8 +73,6 @@ public class PostsController(ILogger logger, IHubContext<PostsHub> hubContext, I
         var theme = Request.Query["theme"].ToString();
         if (string.IsNullOrWhiteSpace(theme))
             theme = ThemeRead();
-        if (string.IsNullOrWhiteSpace(theme))
-            theme = "default";
 
         // Get or create user
         var user = await userService.GetOrCreateUserAsync(username, theme);

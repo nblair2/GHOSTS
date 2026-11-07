@@ -48,11 +48,6 @@ public class UsersController(
             return NotFound();
         }
 
-        if (string.IsNullOrWhiteSpace(theme))
-        {
-            theme = user.Theme ?? "default";
-        }
-
         ThemeWrite(theme);
 
         var isSelf = !string.IsNullOrWhiteSpace(currentUsername) &&
