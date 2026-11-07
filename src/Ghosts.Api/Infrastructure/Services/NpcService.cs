@@ -41,6 +41,7 @@ public interface INpcService
     public Task DeleteById(Guid id);
     public Task<IEnumerable<string>> GetKeys(string key);
     public Task SyncWithMachineUsernames();
+    public Task CreateForMachine(Machine machine);
     public Task<IEnumerable<NpcRecord>> GetByScenarioId(int scenarioId);
 }
 
@@ -203,19 +204,26 @@ public class NpcService(ApplicationDbContext context, IEvidenceProcessor evidenc
             .ToListAsync();
     }
 
+    // The same post can be reported by NPC chat and again by the social site it was published to
+    private static readonly TimeSpan RepeatedActivityWindow = TimeSpan.FromMinutes(5);
+
     public async Task<NpcActivity> CreateActivity(Guid id, string activityType, string detail)
     {
+        Enum.TryParse<NpcActivity.ActivityTypes>(activityType, true, out var type);
+
+        var since = DateTime.UtcNow - RepeatedActivityWindow;
+        var repeated = await _context.NpcActivities.FirstOrDefaultAsync(a =>
+            a.NpcId == id && a.ActivityType == type && a.Detail == detail && a.CreatedUtc >= since);
+        if (repeated != null)
+            return repeated;
+
         var npcActivity = new NpcActivity
         {
             NpcId = id,
+            ActivityType = type,
             Detail = detail,
             CreatedUtc = DateTime.UtcNow
         };
-        if (Enum.TryParse<NpcActivity.ActivityTypes>(activityType, true, out var value))
-        {
-            npcActivity.ActivityType = value;
-        }
-
         _context.NpcActivities.Add(npcActivity);
         await _context.SaveChangesAsync();
 
@@ -624,33 +632,37 @@ public class NpcService(ApplicationDbContext context, IEvidenceProcessor evidenc
 
     public async Task SyncWithMachineUsernames()
     {
-        var machines = await _context.Machines.ToListAsync();
-        var npcs = await _context.Npcs.ToListAsync();
-        var usernames = machines.ToDictionary(m => m.Id, m => m.CurrentUsername);
+        foreach (var machine in await _context.Machines.ToListAsync())
+            await CreateForMachine(machine);
+    }
 
-        // One NPC per social handle: a client that registers twice must not become two NPCs
-        var linked = npcs.Where(n => n.MachineId.HasValue).Select(n => n.MachineId.Value).ToHashSet();
-        var handles = npcs.Select(n => SocialHandle(n, n.MachineId.HasValue ? usernames.GetValueOrDefault(n.MachineId.Value) : null))
-            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+    // A client registers over HTTP and over the hub at once; one NPC per handle needs the checks serialised
+    private static readonly SemaphoreSlim MachineNpcLock = new(1, 1);
 
-        foreach (var machine in machines)
+    public async Task CreateForMachine(Machine machine)
+    {
+        await MachineNpcLock.WaitAsync();
+        try
         {
-            if (linked.Contains(machine.Id))
-                continue;
+            if (await _context.Npcs.AnyAsync(n => n.MachineId == machine.Id))
+                return;
+
             var handle = machine.CurrentUsername?.Trim();
-            if (!string.IsNullOrEmpty(handle) && !handles.Add(handle))
-                continue;
+            if (!string.IsNullOrEmpty(handle) && await GetBySocialHandle(handle) != null)
+                return;
 
             var npc = NpcRecord.TransformToNpc(Npc.Generate(MilitaryUnits.GetServiceBranch(), machine.CurrentUsername));
             npc.Id = npc.NpcProfile.Id;
             npc.CreatedUtc = DateTime.UtcNow;
             npc.MachineId = machine.Id;
             _context.Npcs.Add(npc);
+            await _context.SaveChangesAsync();
             _log.Trace($"NPC created for {machine.CurrentUsername}...");
         }
-
-        await _context.SaveChangesAsync();
-        _log.Trace("NPCs created for each username in machines");
+        finally
+        {
+            MachineNpcLock.Release();
+        }
     }
 
     public async Task<IEnumerable<NpcRecord>> GetByScenarioId(int scenarioId)
