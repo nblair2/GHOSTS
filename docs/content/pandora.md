@@ -14,13 +14,13 @@ The mode is controlled by configuration, making Pandora a unified content server
 
 ## Running this server
 
-Pandora runs as a Docker container, either on its own or as part of the GHOSTS stack. Each works with no extra configuration:
+Pandora runs as a Docker container, either on its own or under the Aspire host with the rest of the GHOSTS stack. Each works with no extra configuration:
 
-| | Standalone | In the GHOSTS stack |
+| | Standalone | Aspire host |
 |---|---|---|
 | Database | SQLite in `/app/db` | PostgreSQL on `ghosts-postgres`, database `pandora` |
 | Activity reporting to the GHOSTS API | off; set `GHOSTS_API_URL` to turn it on | on |
-| Address | http://localhost:8000 | http://localhost:8800; `http://ghosts-pandora:5000` on the compose network |
+| Address | http://localhost:8000 | http://localhost:8800 |
 
 ### Standalone
 
@@ -40,17 +40,11 @@ docker compose up -d
 
 To report posts, likes and comments to a GHOSTS API as NPC activity, set `GHOSTS_API_URL` (for example `-e GHOSTS_API_URL=http://ghosts-api:5000/api`).
 
-### In the GHOSTS stack
+### With the GHOSTS stack
 
-The API's [docker-compose.yml](https://github.com/cmu-sei/GHOSTS/blob/master/src/Ghosts.Api/docker-compose.yml) runs Pandora as the `ghosts-pandora` service, as does the Aspire host. It uses the stack's PostgreSQL, reports activity to `ghosts-api`, and is where the API (`PANDORA_HOST`) and the n8n social workflows (`PANDORA_URL`) post by default.
+The API's [docker-compose.yml](https://github.com/cmu-sei/GHOSTS/blob/master/src/Ghosts.Api/docker-compose.yml) does not run Pandora. NPC chat (`PANDORA_HOST` on the API) and the n8n social workflows (`PANDORA_URL` on n8n) post to a standalone Pandora on the Docker host, `http://host.docker.internal:8000` by default; set either in the `.env` file next to that compose file to point elsewhere.
 
-Set these in the `.env` file next to that compose file to change it:
-
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `PANDORA_PORT` | `8800` | Host port Pandora is published on |
-| `PANDORA_MODE_TYPE` | `social` | `social` or `website` |
-| `PANDORA_DEFAULT_THEME` | `facebook` | Theme used in social mode |
+The Aspire host runs Pandora with the rest of the stack, on the stack's PostgreSQL and reporting activity to `ghosts-api`.
 
 See the [Pandora readme](https://github.com/cmu-sei/GHOSTS/blob/master/src/Ghosts.Pandora/readme.md) for all settings.
 

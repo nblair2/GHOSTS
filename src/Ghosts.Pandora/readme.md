@@ -386,14 +386,16 @@ Configure dynamic content generation:
 
 ## Running the Server
 
-Pandora runs either on its own or as part of the GHOSTS stack. Each works with no extra configuration:
+Pandora runs either on its own or under the Aspire host with the rest of the GHOSTS stack. Each works with no extra configuration:
 
-| | Standalone | In the GHOSTS stack |
+| | Standalone | Aspire host |
 |---|---|---|
-| Started with | `docker run`, or `docker compose up -d` in `src/Ghosts.Pandora/src` | `docker compose up -d` in `src/Ghosts.Api` (service `ghosts-pandora`), or the Aspire host |
+| Started with | `docker run`, or `docker compose up -d` in `src/Ghosts.Pandora/src` | the Aspire host in `src/apphost` |
 | Database | SQLite in `/app/db` | PostgreSQL on `ghosts-postgres`, database `pandora` |
 | Activity reporting to the GHOSTS API | off; set `GHOSTS_API_URL` to turn it on | on |
-| Address | http://localhost:8000 | http://localhost:8800 (`PANDORA_PORT`); `http://ghosts-pandora:5000` on the compose network |
+| Address | http://localhost:8000 | http://localhost:8800 |
+
+The API's compose stack does not run Pandora; its `PANDORA_HOST` (NPC chat) and `PANDORA_URL` (n8n) default to a standalone Pandora at `http://host.docker.internal:8000`.
 
 ### Docker
 
