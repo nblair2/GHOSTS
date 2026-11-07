@@ -16,6 +16,7 @@ namespace Ghosts.Api.Tests;
 /// The social site reports activity by username, so a username has to lead back to one NPC: the one whose
 /// machine reports it, else the one with that email name, else the one named first.last.
 /// </summary>
+[Collection("Npc.Generate")]
 public class NpcSocialHandleTests
 {
     [Fact]
@@ -98,22 +99,41 @@ public class NpcSocialHandleTests
     }
 
     [Fact]
-    public async Task Syncing_machines_makes_one_npc_per_username()
+    public async Task A_machine_gets_one_npc_even_when_it_registers_twice()
     {
-        await using var context = TestDb.New("npc-handle");
+        var database = $"npc-handle-{Guid.NewGuid()}";
+        await using var context = TestDb.Named(database);
         var existing = AddNpc(context, machineUsername: "jsmith");
-        foreach (var username in new[] { "JSmith", "apond", "apond", "rwilliams" })
-            context.Machines.Add(new Machine { Id = Guid.NewGuid(), Name = "workstation-02", CurrentUsername = username });
+        var machines = new[] { "JSmith", "apond", "apond", "rwilliams" }
+            .Select(u => new Machine { Id = Guid.NewGuid(), Name = "workstation-02", CurrentUsername = u }).ToList();
+        context.Machines.AddRange(machines);
         context.SaveChanges();
 
+        // Each check-in runs in its own request, as the HTTP and hub registrations of one client do
+        await Task.WhenAll(machines.Select(m => Service(TestDb.Named(database)).CreateForMachine(m)));
         var service = Service(context);
-        await service.SyncWithMachineUsernames();
         await service.SyncWithMachineUsernames();
 
         Assert.Equal(3, context.Npcs.Count());
         Assert.Equal(existing, (await service.GetBySocialHandle("jsmith")).Id);
         Assert.NotNull(await service.GetBySocialHandle("apond"));
         Assert.NotNull(await service.GetBySocialHandle("rwilliams"));
+    }
+
+    [Fact]
+    public async Task The_same_activity_reported_twice_is_stored_once()
+    {
+        await using var context = TestDb.New("npc-handle");
+        var npc = AddNpc(context, machineUsername: "jsmith");
+        var service = Service(context);
+
+        var first = await service.CreateActivity(npc, "SocialMediaPost", "Hello from chat");
+        var again = await service.CreateActivity(npc, "SocialMediaPost", "Hello from chat");
+        await service.CreateActivity(npc, "SocialMediaLike", "Hello from chat");
+        await service.CreateActivity(npc, "SocialMediaPost", "Something else");
+
+        Assert.Equal(first.Id, again.Id);
+        Assert.Equal(3, context.NpcActivities.Count());
     }
 
     private static NpcService Service(ApplicationDbContext context) => new(context, new Mock<IEvidenceProcessor>().Object);
